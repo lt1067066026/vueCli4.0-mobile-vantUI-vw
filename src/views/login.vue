@@ -5,52 +5,60 @@
         </div>
         <div class="list userNameBox">
             <i></i>
-            <input type="text" placeholder="账号" v-model="username" autocomplete='off'>
+            <input
+                type="text"
+                placeholder="账号"
+                v-model="username"
+                autocomplete="off"
+            />
         </div>
         <div class="list passwordBox">
             <i></i>
-            <input type="password" placeholder="密码" v-model="password" autocomplete='off'>
+            <input
+                type="password"
+                placeholder="密码"
+                v-model="password"
+                autocomplete="off"
+            />
         </div>
         <div class="btnBox">
-        <button @click="loginBtn" class="loginBtn">登录</button>
-
+            <button @click="loginBtn" class="loginBtn">登录</button>
         </div>
     </section>
 </template>
 
 <script>
-// @ is an alias to /src
-import {
-    mapActions
-} from 'vuex';
 export default {
-    name: 'login',
+    name: "login",
     data() {
         return {
-            username: '',
-            password: ''
+            username: "",
+            password: ""
         };
     },
     components: {},
     created() {},
     mounted() {},
     methods: {
-        ...mapActions('login', ['login']),
-        loginBtn() {
-            if (this.username === '' || this.password === '') {
-                
+        async loginBtn() {
+            if (this.username === "" || this.password === "") {
             } else {
-                this.login({
+                let data = {
                     username: this.username,
                     password: this.password,
-                    $router: this.$router,
-                    $route: this.$route
-                });
+                }
+                await this.$store
+                    .dispatch("login/login", data)
+                    .then(res => {
+                        const redirect = this.$route.query.redirect || "/";
+                        this.$router.replace({
+                            path: redirect
+                        });
+                    })
+                    .catch(() => {});
             }
         }
     }
 };
 </script>
-<style scoped lang="scss">
-
-</style>
+<style scoped lang="scss"></style>

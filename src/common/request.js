@@ -1,41 +1,63 @@
 import axios from 'axios';
-import env from '@/config/env';
+import store from '@/store'
+import { baseApi } from '@/config'
+import { Toast } from 'vant'
 
-const MOCKURL = ''; // mock数据地址
 
 /**
  * 自定义Axios实例
  */
-const AJAX = axios.create({
-    baseURL: env.baseUrl,
-    timeout: 30000,
-    withCredentials: env.credential
+const service = axios.create({
+    baseURL: baseApi,
+    timeout: 5000,
+    withCredentials: true
 });
 
 // 添加请求拦截器
-AJAX.interceptors.request.use(function (config) {
-    // 在发送请求之前做些什么
-    if (process.env.NODE_ENV === 'development') {
-        config.url = `http://${location.host}` + config.url;           // 自定义反向代理
+service.interceptors.request.use(
+    config => {
+        // 不传递默认开启loading
+        if (!config.hideloading) {
+            // loading
+            Toast.loading({
+                forbidClick: true
+            })
+        }
+        if (store.getters.login.accessToken) {
+            config.headers['X-Token'] = ''
+        }
+        return config
+    },
+    error => {
+        // do something with request error
+        console.log(error) // for debug
+        return Promise.reject(error)
     }
-    return config;
-}, function (error) {
-    // 对请求错误做些什么
-    return Promise.reject(error);
-});
+)
 
 // 添加响应拦截器
-AJAX.interceptors.response.use(function (response) {
-    // 对响应数据做点什么
-    return response.data;
-}, function (error) {
-    // 对响应错误做点什么，比如400、401、402等等
-    if (error && error.response) {
-        console.log(error.response)
+service.interceptors.response.use(
+    response => {
+        Toast.clear()
+        const res = response.data
+        if (res.status && res.status !== 200) {
+            // 登录超时,重新登录
+            if (res.status === 401) {
+                store.dispatch('login/logout').then(() => {
+                    location.reload()
+                })
+            }
+            return Promise.reject(res || 'error')
+        } else {
+            return Promise.resolve(res)
+        }
+    },
+    error => {
+        Toast.clear()
+        console.log('err' + error) // for debug
+        return Promise.reject(error)
     }
-    return Promise.reject(error);
-});
-
+)
 // 定义对外Get、Post、File请求
 export default {
     get(url, param = {}, headers = {}) {

@@ -1,6 +1,6 @@
 <template>
     <div class="tab-bar">
-        <van-tabbar fixed route v-model="active" @change="handleChange">
+        <van-tabbar :fixed='false' route v-model="active" @change="handleChange">
             <van-tabbar-item
                 v-for="(item, index) in tabs"
                 :to="item.to"
@@ -14,8 +14,6 @@
 </template>
 
 <script>
-import { sessionGetItem } from "../common/util";
-
 export default {
     props: {
         defaultActive: {
@@ -52,4 +50,12 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.tab-bar{
+    width: 100%;
+    .van-tabbar-item{
+        width: 50px;
+    }
+}
+
+</style>

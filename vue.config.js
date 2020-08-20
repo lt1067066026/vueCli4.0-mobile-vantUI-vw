@@ -1,5 +1,7 @@
 // vue.config.js
 const path = require('path');
+const defaultSettings = require('./src/config/index.js')
+const name = defaultSettings.title || 'vue mobile template'
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 function resolve(dir) {
@@ -20,8 +22,10 @@ module.exports = {
         host: '0.0.0.0',    // 指定使用一个 host，默认是 localhost
         port: 8080,         // 端口地址
         https: false,       // 使用https提供服务
-        // 这里写你调用接口的基础路径，来解决跨域，如果设置了代理，那你本地开发环境的axios的baseUrl要写为 '' ，即空字符串
-        proxy: ''
+        overlay: {
+            warnings: true,
+            errors: true,
+        },
     },
     css: {
         loaderOptions: {
@@ -45,6 +49,7 @@ module.exports = {
 
     configureWebpack: config => {
         // 生产环境打包分析体积
+        config.name = name
         if (process.env.NODE_ENV === 'production') {
             return {
                 plugins: [
@@ -53,5 +58,5 @@ module.exports = {
             }
         }
     },
-    
+
 };
