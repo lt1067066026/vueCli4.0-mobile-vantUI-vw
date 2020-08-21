@@ -5,9 +5,9 @@ import store from '../store/index'
 Vue.use(Router)
 
 // 按需（懒）加载
-const Home = () => import('../views/home')
-const My = () => import('../views/my')
-const Login = () => import('../views/login')
+const Home = () => import('../views/homePage/index')
+const My = () => import('../views/personalPage/index')
+const Login = () => import('../views/loginPage/index')
 
 
 
@@ -80,9 +80,9 @@ let historyCount = history.getItem('count') * 1 || 0
 history.setItem('/', 0)
 
 // 全局路由钩子函数 对全局有效
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
     let auth = to.meta.auth
-    let token = store.getters['login/accessToken'];
+    let hasToken = store.getters['login/accessToken'];
     // 页面跳转时候需要切换动画
     if (to.meta.transition) {
         // 当跳转时携带指定方向参数则优先使用指定参数
@@ -105,11 +105,26 @@ router.beforeEach((to, from, next) => {
                 store.commit('app/updateDirection', 'forward')
             }
         }
-    }else{
+    } else {
         store.commit('app/updateDirection', '')
     }
     if (auth) { // 需要登录
-        if (token) {
+        if (hasToken) {
+            if (to.path === '/login') {
+                next({ path: "/" });
+            } else {
+                const hasUserInfo = store.getters["login/userInfo"]
+                if (JSON.stringify(hasUserInfo) !== "{}") {
+                    next();
+                } else {
+                    try {
+                        await store.dispatch("login/getInfo");
+                        next();
+                    } catch {
+                        await store.dispatch("login/resetAccessToken");
+                    }
+                }
+            }
             next()
         } else {
             router.push({

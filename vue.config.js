@@ -8,6 +8,10 @@ function resolve(dir) {
     return path.join(__dirname, dir)
 }
 module.exports = {
+    publicPath: './', // 署应用包时的基本 URL。 vue-router hash 模式使用
+    //  publicPath: '/app/', //署应用包时的基本 URL。  vue-router history模式使用
+    outputDir: 'dist', //  生产环境构建文件的目录
+    assetsDir: 'static', //  outputDir的静态资源(js、css、img、fonts)目录
     // 使用运行时编译器的 Vue 构建版本
     runtimeCompiler: true,
 
@@ -22,6 +26,17 @@ module.exports = {
         host: '0.0.0.0',    // 指定使用一个 host，默认是 localhost
         port: 8080,         // 端口地址
         https: false,       // 使用https提供服务
+        proxy: {
+            //配置跨域
+            '/api': {
+                target: "http://192.168.218.146",
+                // ws:true,
+                changOrigin: true,
+                pathRewrite: {
+                    '^/api': '/api'
+                }
+            }
+        },
         overlay: {
             warnings: true,
             errors: true,

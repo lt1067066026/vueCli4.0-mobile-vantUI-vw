@@ -1,5 +1,5 @@
 import Vue from "vue";
-import { login, logout } from "@/api/commonApi";
+import { login, getUserInfo, logout } from "@/api/commonApi";
 import {
   getAccessToken,
   removeAccessToken,
@@ -8,34 +8,37 @@ import {
 
 const state = {
   accessToken: getAccessToken(),
+  userInfo: {}
 };
 const getters = {
   accessToken: (state) => state.accessToken,
+  userInfo: (state) => state.userInfo,
 };
 const mutations = {
   setAccessToken(state, accessToken) {
     state.accessToken = accessToken;
     setAccessToken(accessToken);
   },
+  setUserInfo(state, userInfo) {
+    state.userInfo = userInfo;
+  },
 };
 const actions = {
-  setPermissions({ commit }, permissions) {
-    commit("setPermissions", permissions);
-  },
-  async login({ commit }, data) {
+  login({ commit }, data) {
     return new Promise((resolve, reject) => {
-      // login(data).then(response => {
-      //   resolve(response)
-      // }).catch(error => {
-      //   reject(error)
-      // })
-      // commit("setAccessToken", "accessToken");
-      resolve(true)
+      login(data).then(response => {
+        commit("setAccessToken", response.data.token);
+        resolve(response)
+      }).catch(error => {
+        reject(error)
+      })
+
     })
-
-
   },
-
+  async getInfo({ commit, state }) {
+    const { data } = await getUserInfo();
+    commit("setUserInfo", data);
+  },
   async logout({ dispatch }) {
     // await logout();
     await dispatch("resetAccessToken");
@@ -44,5 +47,8 @@ const actions = {
     commit("setAccessToken", "");
     removeAccessToken();
   },
+  refreshToken({ commit }, token) {
+    commit("setAccessToken", token);
+  }
 };
 export default { state, getters, mutations, actions };
